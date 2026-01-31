@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Ilusão de Ótica - Estilo Escher</title>
+    <style>
+        body {
+            background-color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+            color: #333;
+        }
+        h2 { margin-bottom: 10px; }
+        p { margin-top: 0; font-size: 0.9em; color: #666; }
+        canvas {
+            background-color: #fdfbf7; /* Cor de papel envelhecido */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Geometria Impossível</h2>
+    <p>Uma homenagem à lógica de M.C. Escher</p>
+    <canvas id="escherCanvas" width="400" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('escherCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Configurações de estilo
+        const scale = 60; // Tamanho da estrutura
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2 + 30;
+
+        // Paleta de cores estilo litografia (escala de cinza)
+        const colorTop = '#D9D9D9';   // Luz vindo de cima
+        const colorRight = '#8C8C8C'; // Sombra média
+        const colorLeft = '#404040';  // Sombra escura
+
+        // Função para desenhar um polígono
+        function drawPoly(points, color) {
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        // Definição das coordenadas para um Triângulo de Penrose (Isométrico)
+        // Isso cria a ilusão de profundidade impossível
+        
+        // Coordenadas relativas simplificadas
+        const points = {
+            top_outer: {x: 0, y: -2},
+            right_outer: {x: 1.732, y: 1},
+            left_outer: {x: -1.732, y: 1},
+            
+            top_inner: {x: 0, y: -0.5},
+            right_inner: {x: 0.433, y: 0.25},
+            left_inner: {x: -0.433, y: 0.25},
+            
+            // Pontos intermediários para as "pernas" do triângulo
+            leg1_outer: {x: 0.866, y: -0.5},
+            leg1_inner: {x: 0.866, y: 0.5},
+            
+            leg2_outer: {x: 0, y: 1}, // fundo v
+            leg2_inner: {x: 0, y: 2}, // ponta baixo
+            
+            leg3_outer: {x: -0.866, y: -0.5},
+            leg3_inner: {x: -0.866, y: 0.5}
+        };
+
+        // Função para converter coordenadas isométricas em pixels
+        function iso(x, y) {
+            return {
+                x: centerX + (x * scale),
+                y: centerY + (y * scale)
+            };
+        }
+
+        // Desenhando as faces para criar a ilusão
+        // A ordem importa para a sobreposição correta (Algoritmo do Pintor)
+
+        // 1. Barra Inferior (Face Superior)
+        drawPoly([
+            iso(-1.5, 1.5), iso(1.5, 1.5), iso(1, 1), iso(-2, 1)
+        ], colorTop);
+
+        // 2. Barra Inferior (Face Direita - Sombra)
+        drawPoly([
+             iso(1.5, 1.5), iso(1.5, 2.5), iso(-1.5, 2.5), iso(-1.5, 1.5)
+        ], colorRight);
+        
+        // 3. Barra Esquerda (Face Esquerda - Escura)
+        drawPoly([
+            iso(-1.5, 2.5), iso(-1.5, -0.5), iso(-2.5, -0.5), iso(-2.5, 2.5) // Correção geométrica visual
+        ], colorLeft);
+
+        // --- Aqui começa o "truque" da ilusão ---
+
+        // Perna da Esquerda (Topo)
+        drawPoly([iso(-2.5, -0.5), iso(-0.5, -1.5), iso(0, -1), iso(-2, 1)], colorTop);
+        // Perna da Esquerda (Lado Direito)
+        drawPoly([iso(-0.5, -1.5), iso(-0.5, 1.5), iso(-1.5, 2.5), iso(-1.5, -0.5)], colorRight);
+
+        // Perna da Direita (Topo)
+        drawPoly([iso(0.5, -0.5), iso(2.5, -0.5), iso(1.5, 0.5), iso(-0.5, 0.5)], colorTop);
+        
+        // Perna da Direita (Lado Esquerdo - Escuro)
+        drawPoly([iso(0.5, -0.5), iso(0.5, 2.5), iso(-0.5, 1.5), iso(-0.5, 0.5)], colorLeft);
+
+        // Conector Superior (Lado Esquerdo - Escuro)
+        drawPoly([iso(0, -2), iso(0, -1), iso(-0.5, -1.5), iso(-0.5, -2.5)], colorLeft);
+        
+         // Conector Superior (Lado Direito - Sombra)
+        drawPoly([iso(0, -2), iso(2, -1), iso(2.5, -0.5), iso(0.5, -1.5)], colorRight);
+        
+        // Conector Superior (Topo)
+        drawPoly([iso(-0.5, -2.5), iso(0.5, -1.5), iso(0, -2)], colorTop);
+
+    </script>
+</body>
+</html>

@@ -1,5 +1,4 @@
 import { GenerationParams, ImageTransformParams } from '../types';
-import { renderSolidToUrl } from './SolidRenderer';
 
 // Paletas de cores baseadas no estilo modernista europeu
 const MODERNIST_COLOR_PALETTE = [
@@ -7,12 +6,12 @@ const MODERNIST_COLOR_PALETTE = [
   '#E53835', // Vermelho vibrante
   '#3A86FF', // Azul cobalto
   '#FFB100', // Amarelo cadmio
-
+  
   // Cores secundárias
   '#2EC4B6', // Verde esmeralda
   '#FF9F1C', // Laranja queimado
   '#9D4EDD', // Violeta profundo
-
+  
   // Cores neutras
   '#000000', // Preto carvão
   '#FFFFFF', // Branco giz
@@ -54,14 +53,14 @@ const getRandomColor = (): string => {
  * Aplica transformações e distorções à imagem uploaded
  */
 const applyImageTransformations = (
-  ctx: CanvasRenderingContext2D,
-  image: HTMLImageElement,
+  ctx: CanvasRenderingContext2D, 
+  image: HTMLImageElement, 
   transform: ImageTransformParams,
   canvasWidth: number,
   canvasHeight: number
 ): void => {
   ctx.save();
-
+  
   // Aplicar blend mode (converter para tipo compatível)
   const blendModes: Record<string, GlobalCompositeOperation> = {
     'normal': 'source-over',
@@ -72,23 +71,23 @@ const applyImageTransformations = (
     'hard-light': 'hard-light'
   };
   ctx.globalCompositeOperation = blendModes[transform.blendMode] || 'source-over';
-
+  
   // Aplicar opacidade
   ctx.globalAlpha = transform.opacity;
-
+  
   // Calcular posição central
   const centerX = canvasWidth / 2 + transform.posX;
   const centerY = canvasHeight / 2 + transform.posY;
-
+  
   // Aplicar transformações
   ctx.translate(centerX, centerY);
   ctx.rotate((transform.rotation * Math.PI) / 180);
   ctx.scale(transform.scaleX, transform.scaleY);
-
+  
   // Desenhar imagem
   const imgWidth = image.width;
   const imgHeight = image.height;
-
+  
   // Aplicar distorções
   if (transform.distortion !== 'none' && transform.distortionIntensity > 0) {
     applyDistortionEffects(ctx, image, transform, imgWidth, imgHeight);
@@ -102,7 +101,7 @@ const applyImageTransformations = (
       imgHeight
     );
   }
-
+  
   ctx.restore();
 };
 
@@ -117,7 +116,7 @@ const applyDistortionEffects = (
   height: number
 ): void => {
   const intensity = transform.distortionIntensity;
-
+  
   switch (transform.distortion) {
     case 'wave':
       // Efeito de onda
@@ -126,25 +125,25 @@ const applyDistortionEffects = (
         ctx.drawImage(
           image,
           0, y, width, 2,
-          -width / 2 + waveOffset, y - height / 2, width, 2
+          -width/2 + waveOffset, y - height/2, width, 2
         );
       }
       break;
-
+      
     case 'twist':
       // Efeito de torção
       const twistCenterX = 0;
       const twistCenterY = 0;
-
+      
       for (let y = 0; y < height; y += 3) {
         for (let x = 0; x < width; x += 3) {
-          const dx = x - width / 2;
-          const dy = y - height / 2;
+          const dx = x - width/2;
+          const dy = y - height/2;
           const distance = Math.sqrt(dx * dx + dy * dy);
           const angle = Math.atan2(dy, dx) + (distance * 0.02 * intensity);
           const twistedX = Math.cos(angle) * distance;
           const twistedY = Math.sin(angle) * distance;
-
+          
           ctx.drawImage(
             image,
             x, y, 3, 3,
@@ -153,29 +152,29 @@ const applyDistortionEffects = (
         }
       }
       break;
-
+      
     case 'ripple':
       // Efeito de ripple
       for (let y = 0; y < height; y += 2) {
         for (let x = 0; x < width; x += 2) {
           const rippleX = x + Math.sin(x * 0.1) * 5 * intensity;
           const rippleY = y + Math.cos(y * 0.1) * 5 * intensity;
-
+          
           ctx.drawImage(
             image,
             x, y, 2, 2,
-            rippleX - width / 2, rippleY - height / 2, 2, 2
+            rippleX - width/2, rippleY - height/2, 2, 2
           );
         }
       }
       break;
-
+      
     case 'stretch':
       // Efeito de alongamento
       const stretchFactor = 1 + (intensity * 2);
       ctx.drawImage(
         image,
-        -width / 2, -height / 2,
+        -width/2, -height/2,
         width * stretchFactor, height / stretchFactor
       );
       break;
@@ -190,16 +189,16 @@ const drawRandomShape = (ctx: CanvasRenderingContext2D, x: number, y: number, si
   ctx.strokeStyle = '#000000';
   ctx.globalAlpha = params.opacity;
   ctx.lineWidth = params.lineWidth || (Math.random() * 3 + 1);
-
+  
   const rotation = Math.random() * Math.PI * 2;
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(rotation);
-
-  switch (shapeType) {
+  
+  switch(shapeType) {
     case 'geometric':
       const geoShape = SHAPES.geometric[Math.floor(Math.random() * SHAPES.geometric.length)];
-      switch (geoShape) {
+      switch(geoShape) {
         case 'circle':
           ctx.beginPath();
           ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
@@ -249,14 +248,14 @@ const drawRandomShape = (ctx: CanvasRenderingContext2D, x: number, y: number, si
           ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
           ctx.fillStyle = '#FFFFFF'; // Fundo branco para criar o crescente
           ctx.fill();
-
+          
           ctx.beginPath();
           ctx.arc(size / 4, 0, size / 2.5, 0, Math.PI * 2);
           ctx.fillStyle = '#000000'; // Cor preta para ocultar parte do círculo
           ctx.globalCompositeOperation = 'destination-out';
           ctx.fill();
           ctx.globalCompositeOperation = 'source-over';
-
+          
           ctx.beginPath();
           ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
           ctx.fillStyle = color;
@@ -272,10 +271,10 @@ const drawRandomShape = (ctx: CanvasRenderingContext2D, x: number, y: number, si
           break;
       }
       break;
-
+      
     case 'organic':
       const orgShape = SHAPES.organic[Math.floor(Math.random() * SHAPES.organic.length)];
-      switch (orgShape) {
+      switch(orgShape) {
         case 'blob':
           ctx.beginPath();
           const points = 8 + Math.floor(Math.random() * 6); // 8-13 pontos
@@ -341,29 +340,29 @@ const drawRandomShape = (ctx: CanvasRenderingContext2D, x: number, y: number, si
       }
       break;
   }
-
+  
   ctx.restore();
 };
 
 /**
  * Desenha linhas de conexão irregulares entre formas
  */
-const drawConnectionLines = (ctx: CanvasRenderingContext2D, positions: { x: number, y: number }[]) => {
+const drawConnectionLines = (ctx: CanvasRenderingContext2D, positions: {x: number, y: number}[]) => {
   if (positions.length < 2) return;
-
+  
   ctx.strokeStyle = '#000000';
   ctx.lineWidth = Math.random() * 2 + 1;
   ctx.lineCap = 'round';
-
+  
   for (let i = 0; i < positions.length - 1; i++) {
     if (Math.random() > 0.3) { // Apenas algumas conexões
       ctx.beginPath();
       ctx.moveTo(positions[i].x, positions[i].y);
-
+      
       // Linha irregular com curvas
       const midX = (positions[i].x + positions[i + 1].x) / 2 + (Math.random() - 0.5) * 50;
       const midY = (positions[i].y + positions[i + 1].y) / 2 + (Math.random() - 0.5) * 50;
-
+      
       ctx.quadraticCurveTo(midX, midY, positions[i + 1].x, positions[i + 1].y);
       ctx.stroke();
     }
@@ -381,11 +380,11 @@ const drawPaperTexture = (ctx: CanvasRenderingContext2D, width: number, height: 
   } else if (paperType === 'envelhecido') {
     baseColor = '#F5E6CB';
   }
-
+  
   // Preenche o fundo com a cor base
   ctx.fillStyle = baseColor;
   ctx.fillRect(0, 0, width, height);
-
+  
   // Adiciona textura sutil de papel com densidade configurável
   const density = params.textureDensity || 0.5;
   ctx.fillStyle = 'rgba(0, 0, 0, 0.02)';
@@ -397,7 +396,7 @@ const drawPaperTexture = (ctx: CanvasRenderingContext2D, width: number, height: 
     ctx.arc(x, y, radius, 0, Math.PI * 2);
     ctx.fill();
   }
-
+  
   // Adiciona alguns "rasgos" irregulares
   ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
   ctx.lineWidth = 1;
@@ -406,7 +405,7 @@ const drawPaperTexture = (ctx: CanvasRenderingContext2D, width: number, height: 
     const startY = Math.random() * height;
     const length = Math.random() * 30 + 10;
     const angle = Math.random() * Math.PI * 2;
-
+    
     ctx.beginPath();
     ctx.moveTo(startX, startY);
     ctx.lineTo(startX + Math.cos(angle) * length, startY + Math.sin(angle) * length);
@@ -418,182 +417,107 @@ const drawPaperTexture = (ctx: CanvasRenderingContext2D, width: number, height: 
  * Gera uma composição abstrata modernista localmente
  */
 export const generateLocalArtImage = (params: GenerationParams): Promise<string> => {
-  console.log('=== INICIANDO generateLocalArtImage ===');
-  console.log('Parâmetros recebidos:', params);
-
-  return new Promise(async (resolve) => {
-    // Criar canvas temporário
+  return new Promise((resolve) => {
+    // Criar canvas temporário com resolução configurável
     const canvas = document.createElement('canvas');
     const size = params.resolution || 600;
     canvas.width = size;
     canvas.height = size;
     const ctx = canvas.getContext('2d');
-
+    
     if (!ctx) {
       resolve('');
       return;
     }
-
-    // --- 1. Preparar recursos assíncronos (Sólidos 3D) ---
-    // Decidir aleatoriamente quantos e quais sólidos incluir (0 a 3)
-    const numSolids = Math.floor(Math.random() * 4);
-    const solidImages: HTMLImageElement[] = [];
-
-    if (numSolids > 0) {
-      console.log(`Gerando ${numSolids} sólidos platônicos...`);
-      const solidTypes = ['tetra', 'octa', 'cube', 'ico', 'dodeca'] as const;
-
-      const solidPromises = Array.from({ length: numSolids }).map(() => {
-        const type = solidTypes[Math.floor(Math.random() * solidTypes.length)];
-        const hasDual = Math.random() > 0.5; // 50% de chance de ter dual
-        const dual = hasDual ? solidTypes[Math.floor(Math.random() * solidTypes.length)] : null;
-
-        // Renderizar com resolução adequada (aprox 40% do tamanho do canvas principal para boa qualidade)
-        return renderSolidToUrl(type, dual, Math.floor(size * 0.5));
-      });
-
-      try {
-        const solidUrls = await Promise.all(solidPromises);
-
-        // Carregar URLs como elementos de imagem
-        await Promise.all(solidUrls.map(url => new Promise<void>((resolveImg) => {
-          const img = new Image();
-          img.onload = () => {
-            solidImages.push(img);
-            resolveImg();
-          };
-          img.onerror = () => resolveImg(); // Ignorar erros para não travar
-          img.src = url;
-        })));
-        console.log('Sólidos gerados e carregados.');
-      } catch (e) {
-        console.error('Erro ao gerar sólidos:', e);
-      }
-    }
-
-    // --- 2. Iniciar processo de desenho síncrono ---
-
+    
     // Desenhar textura de papel
     drawPaperTexture(ctx, size, size, params.paperType, params);
-
+    
     // Compor imagem uploaded se existir
     if (params.uploadedImage && params.imageTransform) {
       const img = new Image();
       img.onload = () => {
         applyImageTransformations(ctx, img, params.imageTransform!, size, size);
-        generateShapesWithSolids();
+        // Continuar com a geração das formas após a imagem ser composta
+        generateShapes();
       };
       img.src = params.uploadedImage.url;
+      return; // Esperar o carregamento da imagem
     } else {
-      generateShapesWithSolids();
+      // Se não houver imagem, continuar normalmente
+      generateShapes();
     }
-
-    function generateShapesWithSolids() {
-      // Determinar layout
-      const positions: { x: number, y: number }[] = [];
-
-      // Criar posições
+    
+    function generateShapes() {
+      // Determinar layout com base no tipo de composição
+      const positions: {x: number, y: number}[] = [];
+      
+      // Distribuir elementos com base no tipo de composição
       for (let i = 0; i < params.elementCount; i++) {
         let x, y;
-        switch (params.compositionType) {
+        
+        switch(params.compositionType) {
           case 'horizontal':
-            x = Math.random() * size * 0.8 + size * 0.1;
-            y = Math.random() * size * 0.6 + size * 0.2;
+            x = Math.random() * size * 0.8 + size * 0.1; // Margem de 10% em cada lado
+            y = Math.random() * size * 0.6 + size * 0.2; // Concentrar na parte central horizontalmente
             break;
           case 'vertical':
-            x = Math.random() * size * 0.6 + size * 0.2;
-            y = Math.random() * size * 0.8 + size * 0.1;
+            x = Math.random() * size * 0.6 + size * 0.2; // Concentrar na parte central verticalmente
+            y = Math.random() * size * 0.8 + size * 0.1; // Margem de 10% em cada lado
             break;
           case 'radial':
+            // Distribuição radial a partir do centro
             const angle = Math.random() * Math.PI * 2;
-            const distance = Math.random() * size * 0.35;
+            const distance = Math.random() * size * 0.35; // Até 35% do raio
             x = size / 2 + Math.cos(angle) * distance;
             y = size / 2 + Math.sin(angle) * distance;
             break;
-          default:
-            x = size / 2; y = size / 2;
         }
-        positions.push({ x, y });
+        
+        positions.push({x, y});
       }
-
-      // Embaralhar índices para distribuir os sólidos aleatoriamente entre as formas
-      const indices = Array.from({ length: params.elementCount }, (_, i) => i);
-      for (let i = indices.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [indices[i], indices[j]] = [indices[j], indices[i]];
-      }
-
-      // Desenhar formas e sólidos
-      let solidIndex = 0;
-
+      
+      // Desenhar formas
       for (let i = 0; i < params.elementCount; i++) {
         const pos = positions[i];
-        const sizeFactor = Math.random() * 0.15 + 0.05;
+        const sizeFactor = Math.random() * 0.15 + 0.05; // 5-20% do tamanho do canvas
         const elementSize = size * sizeFactor;
-
-        // Decidir se desenha um sólido nesta posição
-        // Apenas se ainda houver sólidos disponíveis e cair num índice sorteado para ser sólido
-        // Ou simplesmente: distribuir os sólidos nos primeiros N índices embaralhados
-        const shouldDrawSolid = solidIndex < solidImages.length && Math.random() < 0.15; // 15% de chance por iteração se houver sólidos
-
-        if (shouldDrawSolid) {
-          // Desenhar Sólido
-          const solidImg = solidImages[solidIndex];
-          const solidSize = elementSize * 2.5; // Sólidos um pouco maiores que formas normais
-
-          ctx.save();
-          ctx.translate(pos.x, pos.y);
-          ctx.rotate(Math.random() * Math.PI * 0.2 - 0.1); // Leve rotação 2D extra
-          ctx.globalAlpha = params.opacity * 0.9;
-          // Sombra suave para dar destaque
-          ctx.shadowColor = "rgba(0,0,0,0.3)";
-          ctx.shadowBlur = 10;
-          ctx.shadowOffsetY = 5;
-
-          ctx.drawImage(solidImg, -solidSize / 2, -solidSize / 2, solidSize, solidSize);
-          ctx.restore();
-
-          solidIndex++;
-        } else {
-          // Desenhar Forma Vetorial Padrão
-          const shapeType = Math.random() > 0.5 ? 'geometric' : 'organic';
-          let color = params.colors.length > 0
-            ? params.colors[Math.floor(Math.random() * params.colors.length)]
-            : getRandomColor();
-
-          if (!color.startsWith('#')) {
-            // ... mapa de cores (simplificado aqui para brevidade, mas o ideal é manter ou usar a função getRandomColor se falhar)
-            const colorMap: Record<string, string> = {
-              'Vermelho vibrante': '#E53835', 'Azul cobalto': '#3A86FF', 'Amarelo cádmio': '#FFB100',
-              'Verde esmeralda': '#2EC4B6', 'Laranja queimado': '#FF9F1C', 'Violeta profundo': '#9D4EDD',
-              'Preto carvão': '#000000', 'Branco giz': '#FFFFFF', 'Bege linho': '#D4A574', 'Ocre terra': '#BF9B7A'
-            };
-            color = colorMap[color] || getRandomColor();
-          }
-
-          drawRandomShape(ctx, pos.x, pos.y, elementSize, shapeType, color, params);
+        
+        // Escolher tipo de forma (geométrica ou orgânica)
+        const shapeType = Math.random() > 0.5 ? 'geometric' : 'organic';
+        
+        // Escolher cor (priorizar as cores dos parâmetros)
+        let color = params.colors.length > 0 
+          ? params.colors[Math.floor(Math.random() * params.colors.length)]
+          : getRandomColor();
+        
+        // Converter nome da cor para valor hexadecimal se necessário
+        if (!color.startsWith('#')) {
+          // Mapeamento simplificado de nomes de cores para hexadecimais
+          const colorMap: Record<string, string> = {
+            'Vermelho vibrante': '#E53835',
+            'Azul cobalto': '#3A86FF',
+            'Amarelo cádmio': '#FFB100',
+            'Verde esmeralda': '#2EC4B6',
+            'Laranja queimado': '#FF9F1C',
+            'Violeta profundo': '#9D4EDD',
+            'Preto carvão': '#000000',
+            'Branco giz': '#FFFFFF',
+            'Bege linho': '#D4A574',
+            'Ocre terra': '#BF9B7A'
+          };
+          color = colorMap[color] || getRandomColor();
         }
+        
+        drawRandomShape(ctx, pos.x, pos.y, elementSize, shapeType, color, params);
       }
-
-      // Se sobraram sólidos que não foram desenhados (pela chance aleatória), desenhá-los agora em posições aleatórias extras
-      while (solidIndex < solidImages.length) {
-        const solidImg = solidImages[solidIndex];
-        const randomX = Math.random() * size * 0.8 + size * 0.1;
-        const randomY = Math.random() * size * 0.8 + size * 0.1;
-        const solidSize = size * 0.25;
-
-        ctx.save();
-        ctx.translate(randomX, randomY);
-        ctx.globalAlpha = params.opacity;
-        ctx.drawImage(solidImg, -solidSize / 2, -solidSize / 2, solidSize, solidSize);
-        ctx.restore();
-
-        solidIndex++;
-      }
-
+      
+      // Desenhar linhas de conexão
       drawConnectionLines(ctx, positions);
-
-      resolve(canvas.toDataURL('image/png'));
+      
+      // Converter canvas para imagem base64
+      const imageData = canvas.toDataURL('image/png');
+      resolve(imageData);
     }
   });
-};
+}

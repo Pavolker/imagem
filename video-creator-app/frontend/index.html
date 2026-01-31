@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criador de Vídeos - Image to Video</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-large {
+            font-size: 18px;
+            padding: 15px 30px;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .image-card {
+            border: 3px solid transparent;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .image-card.selected {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .image-card .order-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            display: none;
+        }
+
+        .image-card.selected .order-badge {
+            display: flex;
+        }
+
+        .image-card .filename {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px;
+            font-size: 11px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .settings-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .status-bar {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .status-bar.error {
+            background: #ffebee;
+            border-left-color: #f44336;
+        }
+
+        .status-bar.success {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .video-result {
+            margin-top: 30px;
+            text-align: center;
+            display: none;
+        }
+
+        .video-result video {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .folder-info {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        .folder-info code {
+            background: rgba(0,0,0,0.1);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .selected-count {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 Criador de Vídeos</h1>
+            <p>Crie vídeos com as imagens da pasta local</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Seção: Carregar Imagens -->
+            <div class="section">
+                <h2>📁 Carregar Imagens</h2>
+                <div class="input-section">
+                    <div class="folder-info">
+                        <strong>Pasta das imagens:</strong> <code>backend/images/</code>
+                        <br><br>
+                        Formatos suportados: JPG, PNG, WEBP, GIF, BMP
+                        <br>
+                        Coloque suas imagens nesta pasta e clique no botão abaixo.
+                    </div>
+                    <button class="btn btn-primary btn-large" onclick="loadLocalImages()">
+                        🔄 Carregar Imagens da Pasta
+                        <span id="load-spinner" class="loading-spinner" style="display: none;"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Seleção de Imagens -->
+            <div id="images-section" class="section" style="display: none;">
+                <h2>🖼️ Selecione as Imagens <span id="selected-count" class="selected-count">0 selecionadas</span></h2>
+                <p style="color: #666; margin-bottom: 15px;">Clique nas imagens para selecionar na ordem desejada</p>
+
+                <div class="images-grid" id="imagesGrid"></div>
+
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="clearSelection()">Limpar Seleção</button>
+                    <button class="btn btn-primary" onclick="selectAll()">Selecionar Todas</button>
+                </div>
+            </div>
+
+            <!-- Configurações -->
+            <div id="settings-section" class="section" style="display: none;">
+                <h2>⚙️ Configurações do Vídeo</h2>
+                <div class="settings-panel">
+                    <div class="form-group">
+                        <label>Duração por Imagem (segundos):</label>
+                        <input type="number" id="duration" value="3" min="0.5" max="10" step="0.5">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Duração da Transição (segundos):</label>
+                        <input type="number" id="transition" value="0.5" min="0" max="2" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Resolução:</label>
+                        <select id="resolution">
+                            <option value="1920x1080">Full HD (1920x1080)</option>
+                            <option value="1280x720">HD (1280x720)</option>
+                            <option value="1080x1920">Stories (1080x1920)</option>
+                            <option value="3840x2160">4K (3840x2160)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>FPS:</label>
+                        <select id="fps">
+                            <option value="24">24 FPS (Cinema)</option>
+                            <option value="30" selected>30 FPS (Padrão)</option>
+                            <option value="60">60 FPS (Suave)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 20px;">
+                    <label>
+                        <input type="checkbox" id="addFade" checked>
+                        Adicionar efeito fade entre imagens
+                    </label>
+                </div>
+
+                <button class="btn btn-success btn-large" onclick="generateVideo()" style="margin-top: 20px; width: 100%;">
+                    🚀 Gerar Vídeo
+                    <span id="generate-spinner" class="loading-spinner" style="display: none;"></span>
+                </button>
+            </div>
+
+            <!-- Status -->
+            <div id="status-bar" class="status-bar"></div>
+            <div id="progress-bar" class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+
+            <!-- Resultado -->
+            <div id="video-result" class="video-result">
+                <h2>🎉 Vídeo Gerado com Sucesso!</h2>
+                <video id="result-video" controls></video>
+                <div style="margin-top: 20px;">
+                    <a id="download-link" class="btn btn-primary" download>⬇️ Baixar Vídeo</a>
+                    <button class="btn btn-secondary" onclick="resetApp()">Criar Novo Vídeo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        let selectedImages = [];
+        let availableImages = [];
+
+        function showStatus(message, type = 'info') {
+            const statusBar = document.getElementById('status-bar');
+            statusBar.textContent = message;
+            statusBar.className = 'status-bar ' + type;
+            statusBar.style.display = 'block';
+        }
+
+        function hideStatus() {
+            document.getElementById('status-bar').style.display = 'none';
+        }
+
+        function updateSelectedCount() {
+            document.getElementById('selected-count').textContent = selectedImages.length + ' selecionadas';
+        }
+
+        async function loadLocalImages() {
+            const spinner = document.getElementById('load-spinner');
+            spinner.style.display = 'inline-block';
+
+            try {
+                const response = await fetch(`${API_URL}/api/local-images`);
+                const data = await response.json();
+
+                if (data.success) {
+                    if (data.count === 0) {
+                        showStatus('Nenhuma imagem encontrada na pasta backend/images/. Coloque algumas imagens lá e tente novamente.', 'error');
+                        return;
+                    }
+                    availableImages = data.images;
+                    renderImages();
+                    showStatus(`${data.count} imagens carregadas! Selecione as que deseja usar no vídeo.`, 'success');
+                } else {
+                    showStatus('Erro ao carregar imagens locais', 'error');
+                }
+            } catch (error) {
+                showStatus('Erro de conexão com o servidor. Verifique se o backend está rodando.', 'error');
+            } finally {
+                spinner.style.display = 'none';
+            }
+        }
+
+        function renderImages() {
+            const grid = document.getElementById('imagesGrid');
+            grid.innerHTML = '';
+
+            availableImages.forEach((img, index) => {
+                const card = document.createElement('div');
+                card.className = 'image-card';
+                card.onclick = () => toggleImageSelection(img, card);
+
+                const imgUrl = API_URL + img.url;
+                const imgKey = img.url;
+
+                card.innerHTML = `
+                    <img src="${imgUrl}" alt="${img.filename}" loading="lazy">
+                    <div class="order-badge">${selectedImages.findIndex(i => i.url === imgKey) + 1}</div>
+                    <div class="filename">${img.filename}</div>
+                `;
+
+                grid.appendChild(card);
+            });
+
+            document.getElementById('images-section').style.display = 'block';
+            document.getElementById('settings-section').style.display = 'block';
+        }
+
+        function toggleImageSelection(img, card) {
+            const imgKey = img.url;
+            const index = selectedImages.findIndex(i => i.url === imgKey);
+
+            if (index > -1) {
+                selectedImages.splice(index, 1);
+                card.classList.remove('selected');
+            } else {
+                selectedImages.push(img);
+                card.classList.add('selected');
+            }
+
+            updateBadges();
+            updateSelectedCount();
+        }
+
+        function updateBadges() {
+            const cards = document.querySelectorAll('.image-card');
+            cards.forEach((card, index) => {
+                const badge = card.querySelector('.order-badge');
+                const img = availableImages[index];
+                const order = selectedImages.findIndex(i => i.url === img.url);
+
+                if (order > -1) {
+                    badge.textContent = order + 1;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+        }
+
+        function clearSelection() {
+            selectedImages = [];
+            document.querySelectorAll('.image-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            updateBadges();
+            updateSelectedCount();
+        }
+
+        function selectAll() {
+            selectedImages = [...availableImages];
+            document.querySelectorAll('.image-card').forEach(card => {
+                card.classList.add('selected');
+            });
+            updateBadges();
+            updateSelectedCount();
+        }
+
+        async function generateVideo() {
+            if (selectedImages.length < 2) {
+                showStatus('Selecione pelo menos 2 imagens para criar o vídeo.', 'error');
+                return;
+            }
+
+            const spinner = document.getElementById('generate-spinner');
+            spinner.style.display = 'inline-block';
+
+            const imageUrls = selectedImages.map(img => img.url);
+
+            const config = {
+                image_urls: imageUrls,
+                duration_per_image: parseFloat(document.getElementById('duration').value),
+                transition_duration: parseFloat(document.getElementById('transition').value),
+                resolution: document.getElementById('resolution').value,
+                fps: parseInt(document.getElementById('fps').value),
+                add_fade: document.getElementById('addFade').checked,
+                use_local: true
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/create-video`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
+                const data = await response.json();
+
+                if (data.video_id) {
+                    showStatus('Vídeo em processamento... Isso pode levar alguns minutos.', 'info');
+                    document.getElementById('progress-bar').style.display = 'block';
+                    await checkVideoStatus(data.video_id);
+                }
+            } catch (error) {
+                showStatus('Erro ao iniciar geração do vídeo', 'error');
+                spinner.style.display = 'none';
+            }
+        }
+
+        async function checkVideoStatus(videoId) {
+            const checkInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_URL}/api/video-status/${videoId}`);
+                    const data = await response.json();
+
+                    if (data.status === 'completed') {
+                        clearInterval(checkInterval);
+                        document.getElementById('progress-fill').style.width = '100%';
+                        showVideoResult(videoId);
+                        document.getElementById('generate-spinner').style.display = 'none';
+                        showStatus('Vídeo gerado com sucesso!', 'success');
+                    } else if (data.status === 'error') {
+                        clearInterval(checkInterval);
+                        showStatus('Erro ao gerar vídeo: ' + data.message, 'error');
+                        document.getElementById('generate-spinner').style.display = 'none';
+                    } else {
+                        // Simular progresso
+                        const currentWidth = parseFloat(document.getElementById('progress-fill').style.width) || 0;
+                        if (currentWidth < 90) {
+                            document.getElementById('progress-fill').style.width = (currentWidth + 5) + '%';
+                        }
+                    }
+                } catch (error) {
+                    clearInterval(checkInterval);
+                }
+            }, 2000);
+        }
+
+        function showVideoResult(videoId) {
+            const videoUrl = `${API_URL}/api/download/${videoId}`;
+            const video = document.getElementById('result-video');
+            video.src = videoUrl;
+            video.load();
+
+            document.getElementById('download-link').href = videoUrl;
+            document.getElementById('video-result').style.display = 'block';
+
+            // Scroll para o resultado
+            document.getElementById('video-result').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetApp() {
+            selectedImages = [];
+            availableImages = [];
+            document.getElementById('images-section').style.display = 'none';
+            document.getElementById('settings-section').style.display = 'none';
+            document.getElementById('video-result').style.display = 'none';
+            document.getElementById('imagesGrid').innerHTML = '';
+            document.getElementById('progress-bar').style.display = 'none';
+            document.getElementById('progress-fill').style.width = '0%';
+            hideStatus();
+            updateSelectedCount();
+        }
+
+        // Carregar imagens automaticamente ao iniciar
+        window.onload = function() {
+            loadLocalImages();
+        };
+    </script>
+</body>
+</html>

@@ -46,13 +46,27 @@ const applySignature = async (base64Image: string): Promise<string> => {
 };
 
 export const generateArtImage = async (params: GenerationParams): Promise<string> => {
-  // Geração local de imagens (única opção disponível)
-  const localImage = await generateLocalArtImage(params);
+  try {
+    console.log('=== INICIANDO generateArtImage ===');
+    console.log('Parâmetros recebidos:', params);
+    console.log('Tipo de params:', typeof params);
+    console.log('Params é objeto?', typeof params === 'object' && params !== null);
+    
+    // Geração local de imagens (única opção disponível)
+    console.log('Chamando generateLocalArtImage...');
+    const localImage = await generateLocalArtImage(params);
+    console.log('generateArtImage: Imagem local gerada:', !!localImage);
 
-  // Verificar se a imagem local foi gerada corretamente antes de aplicar a assinatura
-  if (!localImage || localImage === '') {
-    throw new Error("Falha ao gerar imagem localmente");
+    // Verificar se a imagem local foi gerada corretamente antes de aplicar a assinatura
+    if (!localImage || localImage === '') {
+      throw new Error("Falha ao gerar imagem localmente");
+    }
+
+    const finalImage = await applySignature(localImage);
+    console.log('generateArtImage: Assinatura aplicada com sucesso');
+    return finalImage;
+  } catch (error) {
+    console.error('Erro em generateArtImage:', error);
+    throw error;
   }
-
-  return await applySignature(localImage);
 };
