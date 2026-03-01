@@ -3,6 +3,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { AppStatus, GeneratedArt, GenerationParams, ImageTransformParams } from './types';
 import { getRandomParams } from './utils/randomizer';
 import ControlsPanel from './components/ControlsPanel';
+import LeftSidebarControls from './components/LeftSidebarControls';
 import PostEditPanel from './components/PostEditPanel';
 import { generateArtImage } from './services/geminiService';
 import InspirationGallery from './components/InspirationGallery';
@@ -273,12 +274,12 @@ const App: React.FC = () => {
   const handleDownload = useCallback(() => {
     console.log('handleDownload chamado');
     console.log('currentArt:', currentArt);
-    
+
     if (!currentArt) {
       console.log('Nenhuma arte para baixar');
       return;
     }
-    
+
     console.log('Baixando arte:', currentArt.id);
     const link = document.createElement('a');
     link.href = currentArt.fullImageUrl;
@@ -288,6 +289,12 @@ const App: React.FC = () => {
     document.body.removeChild(link);
     console.log('Download concluído');
   }, [currentArt]);
+
+  const handleClearImage = useCallback(() => {
+    console.log('handleClearImage chamado');
+    setCurrentArt(null);
+    console.log('Imagem atual limpa');
+  }, []);
 
   return (
     <div className="min-h-screen paper-texture">
@@ -336,9 +343,18 @@ const App: React.FC = () => {
 
       <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="grid lg:grid-cols-12 gap-12">
-          
+          {/* Left Sidebar: Controls from LeftSidebarControls */}
+          <div className="lg:col-span-3 space-y-8">
+            <div className="sticky top-32 max-h-[calc(100vh-8rem)] overflow-y-auto pb-4 custom-scrollbar flex flex-col h-full">
+              <LeftSidebarControls
+                onGenerate={handleGenerate}
+                currentParams={lastGeneratedParams || defaultParams}
+              />
+            </div>
+          </div>
+
           {/* Main Stage */}
-          <div className="lg:col-span-8 flex flex-col gap-6">
+          <div className="lg:col-span-6 flex flex-col gap-6">
             <div className={`
               relative aspect-square w-full bg-white border border-zinc-200 shadow-2xl overflow-hidden
               flex items-center justify-center transition-all duration-700
@@ -442,16 +458,14 @@ const App: React.FC = () => {
             )}
           </div>
 
-          {/* Sidebar: Controls and History */}
-          <div className="lg:col-span-4 space-y-8">
-            {/* Controls Panel */}
-            <div className="sticky top-32 max-h-[calc(100vh-8rem)] overflow-y-auto pb-4 custom-scrollbar">
-              <ControlsPanel 
-                onGenerate={(params) => {
-                  console.log('ControlsPanel onGenerate chamado com params:', params);
-                  handleGenerate(params);
-                }}
+          {/* Right Sidebar: ControlsPanel (ImageUploader, DistortionControls) and History */}
+          <div className="lg:col-span-3 space-y-8">
+            {/* Controls Panel (agora mais enxuto) */}
+            <div className="sticky top-32 max-h-[calc(100vh-8rem)] overflow-y-auto pb-4 custom-scrollbar flex flex-col h-full">
+              <ControlsPanel
+                onGenerate={handleGenerate}
                 currentParams={lastGeneratedParams || defaultParams}
+                onClearImage={handleClearImage}
               />
             </div>
             
@@ -549,8 +563,8 @@ const App: React.FC = () => {
             <h4 className="serif-font text-2xl mb-2 italic">Laboratório de Arte Algorítmica</h4>
             <p className="text-zinc-400 text-xs uppercase tracking-widest">Inspirado pela BauHaus e o Surrealismo Abstrato</p>
           </div>
-          <div className="text-right text-[10px] text-zinc-500 max-w-xs md:max-w-md">
-            ESTE APLICATIVO UTILIZA O MODELO GEMINI-2.5-FLASH-IMAGE PARA MATERIALIZAR COMPOSIÇÕES BASEADAS EM UM LÉXICO VISUAL MODERNO. TODAS AS IMAGENS SÃO ÚNICAS E GERADAS EM TEMPO REAL.
+          <div className="text-right text-sm text-zinc-500 max-w-xs md:max-w-md">
+            Copywriter 2025 - MDH - Versão 2.0. Desenvolvido por Pvolker
           </div>
         </div>
       </footer>

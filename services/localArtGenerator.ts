@@ -196,9 +196,16 @@ const drawRandomShape = (ctx: CanvasRenderingContext2D, x: number, y: number, si
   ctx.translate(x, y);
   ctx.rotate(rotation);
 
+  // Get selected figures from params if available, otherwise use all shapes
+  const selectedFigures: any = (params as any).selectedFigures || { geometric: SHAPES.geometric, organic: SHAPES.organic };
+
   switch (shapeType) {
     case 'geometric':
-      const geoShape = SHAPES.geometric[Math.floor(Math.random() * SHAPES.geometric.length)];
+      // Filter available geometric shapes based on selections
+      const availableGeometricShapes = SHAPES.geometric.filter(shape => selectedFigures.geometric.includes(shape));
+      // If no shapes selected, use all geometric shapes
+      const filteredGeometricShapes = availableGeometricShapes.length > 0 ? availableGeometricShapes : SHAPES.geometric;
+      const geoShape = filteredGeometricShapes[Math.floor(Math.random() * filteredGeometricShapes.length)];
       switch (geoShape) {
         case 'circle':
           ctx.beginPath();
@@ -274,7 +281,11 @@ const drawRandomShape = (ctx: CanvasRenderingContext2D, x: number, y: number, si
       break;
 
     case 'organic':
-      const orgShape = SHAPES.organic[Math.floor(Math.random() * SHAPES.organic.length)];
+      // Filter available organic shapes based on selections
+      const availableOrganicShapes = SHAPES.organic.filter(shape => selectedFigures.organic.includes(shape));
+      // If no shapes selected, use all organic shapes
+      const filteredOrganicShapes = availableOrganicShapes.length > 0 ? availableOrganicShapes : SHAPES.organic;
+      const orgShape = filteredOrganicShapes[Math.floor(Math.random() * filteredOrganicShapes.length)];
       switch (orgShape) {
         case 'blob':
           ctx.beginPath();
@@ -523,6 +534,14 @@ export const generateLocalArtImage = (params: GenerationParams): Promise<string>
         [indices[i], indices[j]] = [indices[j], indices[i]];
       }
 
+      // Get selected figures from params if available, otherwise use all shapes
+      const selectedFigures: any = (params as any).selectedFigures || { geometric: SHAPES.geometric, organic: SHAPES.organic };
+
+      // Check if any figures are selected
+      const hasSelectedGeometric = selectedFigures.geometric && selectedFigures.geometric.length > 0;
+      const hasSelectedOrganic = selectedFigures.organic && selectedFigures.organic.length > 0;
+      const hasAnySelectedFigures = hasSelectedGeometric || hasSelectedOrganic;
+
       // Desenhar formas e sólidos
       let solidIndex = 0;
 
@@ -554,9 +573,22 @@ export const generateLocalArtImage = (params: GenerationParams): Promise<string>
           ctx.restore();
 
           solidIndex++;
-        } else {
-          // Desenhar Forma Vetorial Padrão
-          const shapeType = Math.random() > 0.5 ? 'geometric' : 'organic';
+        } else if (hasAnySelectedFigures) {
+          // Only draw shapes if at least one type of figure is selected
+          // Determine shape type based on which figures are selected
+          let shapeType: 'geometric' | 'organic';
+
+          if (hasSelectedGeometric && hasSelectedOrganic) {
+            // If both types are selected, choose randomly
+            shapeType = Math.random() > 0.5 ? 'geometric' : 'organic';
+          } else if (hasSelectedGeometric) {
+            // Only geometric shapes are selected
+            shapeType = 'geometric';
+          } else {
+            // Only organic shapes are selected
+            shapeType = 'organic';
+          }
+
           let color = params.colors.length > 0
             ? params.colors[Math.floor(Math.random() * params.colors.length)]
             : getRandomColor();
@@ -576,22 +608,28 @@ export const generateLocalArtImage = (params: GenerationParams): Promise<string>
       }
 
       // Se sobraram sólidos que não foram desenhados (pela chance aleatória), desenhá-los agora em posições aleatórias extras
-      while (solidIndex < solidImages.length) {
-        const solidImg = solidImages[solidIndex];
-        const randomX = Math.random() * size * 0.8 + size * 0.1;
-        const randomY = Math.random() * size * 0.8 + size * 0.1;
-        const solidSize = size * 0.25;
+      // Only draw remaining solids if there are any selected figures
+      if (hasAnySelectedFigures) {
+        while (solidIndex < solidImages.length) {
+          const solidImg = solidImages[solidIndex];
+          const randomX = Math.random() * size * 0.8 + size * 0.1;
+          const randomY = Math.random() * size * 0.8 + size * 0.1;
+          const solidSize = size * 0.25;
 
-        ctx.save();
-        ctx.translate(randomX, randomY);
-        ctx.globalAlpha = params.opacity;
-        ctx.drawImage(solidImg, -solidSize / 2, -solidSize / 2, solidSize, solidSize);
-        ctx.restore();
+          ctx.save();
+          ctx.translate(randomX, randomY);
+          ctx.globalAlpha = params.opacity;
+          ctx.drawImage(solidImg, -solidSize / 2, -solidSize / 2, solidSize, solidSize);
+          ctx.restore();
 
-        solidIndex++;
+          solidIndex++;
+        }
       }
 
-      drawConnectionLines(ctx, positions);
+      // Draw connection lines only if there are selected figures
+      if (hasAnySelectedFigures) {
+        drawConnectionLines(ctx, positions);
+      }
 
       resolve(canvas.toDataURL('image/png'));
     }

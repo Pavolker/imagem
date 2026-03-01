@@ -1,0 +1,110 @@
+import React, { useState } from 'react';
+
+// 1. A CAMADA DE DADOS (O JSON extraído)
+// Na prática, você teria centenas de coordenadas aqui, extraídas de um SVG.
+// "d" é o desenho matemático (o caminho vetorial).
+const dadosDaTesselacao = [
+  {
+    id: "passaro_01",
+    nome: "Pássaro Branco",
+    tipo: "Aéreo",
+    corOriginal: "fill-gray-100", // Classe Tailwind
+    corHover: "hover:fill-blue-200",
+    corAtiva: "fill-blue-500",
+    // Esta é uma forma simplificada (um triângulo/pássaro abstrato)
+    path: "M10,10 L90,10 L50,90 Z" 
+  },
+  {
+    id: "peixe_01",
+    nome: "Peixe Escuro",
+    tipo: "Aquático",
+    corOriginal: "fill-gray-800",
+    corHover: "hover:fill-green-800",
+    corAtiva: "fill-green-600",
+    // Esta é uma forma simplificada (um losango/peixe abstrato) invertido para encaixar
+    path: "M10,10 L50,50 L90,10 L50,-30 Z" 
+  }
+];
+
+const TesselacaoInterativa = () => {
+  // 2. O ESTADO (A "Memória" da aplicação)
+  // Guarda qual animal foi clicado pelo usuário
+  const [elementoSelecionado, setElementoSelecionado] = useState(null);
+
+  return (
+    <div className="flex flex-col md:flex-row gap-8 p-8 bg-slate-50 min-h-screen">
+      
+      {/* ÁREA DA IMAGEM (O Canvas SVG) */}
+      <div className="flex-1 bg-white shadow-lg p-4 rounded-xl border border-slate-200">
+        <h2 className="text-lg font-bold mb-4 text-slate-700">Visualização Interativa</h2>
+        
+        {/* O SVG atua como o mapa onde os animais são desenhados */}
+        <svg viewBox="0 -40 100 140" className="w-full h-auto drop-shadow-md">
+          {dadosDaTesselacao.map((item) => {
+            
+            // Verifica se este item é o que está selecionado
+            const isSelected = elementoSelecionado?.id === item.id;
+
+            return (
+              <path
+                key={item.id}
+                d={item.path} // Desenha a forma matemática
+                
+                // LÓGICA DE ESTILIZAÇÃO DINÂMICA
+                // Se selecionado, usa a cor ativa. Se não, usa a original.
+                className={`
+                  transition-all duration-300 cursor-pointer stroke-slate-400 stroke-1
+                  ${isSelected ? item.corAtiva : item.corOriginal}
+                  ${item.corHover}
+                `}
+                
+                // INTERATIVIDADE
+                onClick={() => setElementoSelecionado(item)}
+              />
+            );
+          })}
+        </svg>
+        <p className="text-sm text-slate-400 mt-2 text-center">Clique nas formas para interagir</p>
+      </div>
+
+      {/* PAINEL DE CONTROLE (Autonomia sobre os dados) */}
+      <div className="w-full md:w-1/3 bg-white p-6 rounded-xl shadow-lg border border-slate-200 h-fit">
+        <h3 className="text-xl font-bold text-slate-800 mb-4">Dados do Elemento</h3>
+        
+        {elementoSelecionado ? (
+          <div className="space-y-4 animate-fade-in">
+            <div className="p-4 bg-slate-100 rounded-lg">
+              <p className="text-xs text-slate-500 uppercase font-bold">Nome</p>
+              <p className="text-lg text-slate-800">{elementoSelecionado.nome}</p>
+            </div>
+            
+            <div className="flex gap-4">
+              <div className="flex-1 p-4 bg-slate-100 rounded-lg">
+                <p className="text-xs text-slate-500 uppercase font-bold">Tipo</p>
+                <p className="text-md font-medium text-indigo-600">{elementoSelecionado.tipo}</p>
+              </div>
+              <div className="flex-1 p-4 bg-slate-100 rounded-lg">
+                <p className="text-xs text-slate-500 uppercase font-bold">ID</p>
+                <p className="text-md font-mono text-slate-600">{elementoSelecionado.id}</p>
+              </div>
+            </div>
+
+            <button 
+              className="w-full py-2 bg-red-50 text-red-600 rounded hover:bg-red-100 transition"
+              onClick={() => setElementoSelecionado(null)}
+            >
+              Limpar Seleção
+            </button>
+          </div>
+        ) : (
+          <div className="text-center py-10 text-slate-400">
+            <p>Nenhum elemento selecionado.</p>
+            <p className="text-sm">Clique na imagem para ver os detalhes.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default TesselacaoInterativa;

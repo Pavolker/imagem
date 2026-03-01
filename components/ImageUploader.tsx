@@ -92,14 +92,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   };
 
   return (
-    <div className="bg-white p-6 border border-zinc-200 rounded-sm shadow-sm">
-      <h3 className="serif-font text-xl mb-4">Imagem de Composição</h3>
-      
+    <div className="bg-white p-4 border border-zinc-200 rounded-sm shadow-sm h-full flex flex-col">
+      <h3 className="serif-font text-lg mb-3">Imagem de Composição</h3>
+
       {!previewUrl ? (
         <div
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all ${
-            isDragging 
-              ? 'border-orange-500 bg-orange-50' 
+          className={`flex-grow border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-all flex flex-col justify-center ${
+            isDragging
+              ? 'border-orange-500 bg-orange-50'
               : 'border-zinc-300 hover:border-zinc-400'
           }`}
           onDragOver={handleDragOver}
@@ -108,24 +108,24 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           onClick={triggerFileSelect}
         >
           <div className="flex flex-col items-center">
-            <svg 
-              className="w-12 h-12 text-zinc-400 mb-4" 
-              fill="none" 
-              stroke="currentColor" 
+            <svg
+              className="w-10 h-10 text-zinc-400 mb-3"
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            <p className="text-zinc-600 font-medium mb-2">
-              Arraste uma imagem aqui ou clique para selecionar
+            <p className="text-zinc-600 font-medium text-sm mb-1">
+              Arraste ou clique
             </p>
-            <p className="text-sm text-zinc-500">
-              JPG, PNG, GIF, WEBP (máx. 10MB)
+            <p className="text-xs text-zinc-500">
+              JPG, PNG, GIF, WEBP
             </p>
           </div>
           <input
@@ -137,13 +137,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           />
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="flex-grow flex flex-col">
           {/* Preview da imagem */}
-          <div className="relative">
-            <img 
-              src={previewUrl} 
-              alt="Preview" 
-              className="w-full h-48 object-contain bg-zinc-100 rounded border border-zinc-200"
+          <div className="flex-grow relative">
+            <img
+              src={previewUrl}
+              alt="Preview"
+              className="w-full h-full object-contain bg-zinc-100 rounded border border-zinc-200"
             />
             <button
               onClick={removeImage}
@@ -154,35 +154,23 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
               </svg>
             </button>
           </div>
-          
-          {/* Informações do arquivo */}
-          <div className="text-xs text-zinc-600">
-            <div className="flex justify-between">
-              <span>Nome:</span>
-              <span className="font-medium truncate ml-2">{currentImage?.name}</span>
+
+          {/* Informações do arquivo e botão substituir */}
+          <div className="mt-2 space-y-1">
+            <div className="text-xs text-zinc-600">
+              <div className="truncate">{currentImage?.name}</div>
+              <div className="text-right">
+                {(currentImage?.size! / 1024 / 1024).toFixed(2)} MB
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span>Tamanho:</span>
-              <span className="font-medium">
-                {(currentImage?.size || 0 / 1024 / 1024).toFixed(2)} MB
-              </span>
-            </div>
+
+            <button
+              onClick={triggerFileSelect}
+              className="w-full py-1 text-xs font-bold uppercase tracking-wider border border-zinc-300 text-zinc-700 hover:bg-zinc-50 rounded transition-colors"
+            >
+              Substituir
+            </button>
           </div>
-          
-          <button
-            onClick={triggerFileSelect}
-            className="w-full py-2 text-sm font-bold uppercase tracking-wider border border-zinc-300 text-zinc-700 hover:bg-zinc-50 rounded transition-colors"
-          >
-            Substituir Imagem
-          </button>
-          
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileSelect}
-            accept="image/*"
-            className="hidden"
-          />
         </div>
       )}
     </div>
